@@ -14,7 +14,7 @@ unordered_map<string,string> reg = {
 {"t3","11100"},{"t4","11101"},{"t5","11110"},{"t6","11111"}
 };
 
-/*utility functions*/
+// utility functions
 
 string bin(int num,int bits){
     unsigned int mask=(1u<<bits)-1;
@@ -27,7 +27,7 @@ void error(int line,string msg){
     exit(1);
 }
 
-/*instruction encoders*/
+//instruction encoders
 
 string R(string funct7,string rs2,string rs1,string funct3,string rd,string opcode){
     return funct7+rs2+rs1+funct3+rd+opcode;
@@ -58,7 +58,7 @@ string J(int imm,string rd,string opcode){
            imm21.substr(1,8)+rd+opcode;
 }
 
-/*main function*/
+//main function
 
 int main(int argc,char* argv[]){
 
@@ -77,7 +77,7 @@ while(getline(in,line)){
     if(line.size()) lines.push_back(line);
 }
 
-/* store label address */
+//store label address
 
 unordered_map<string,int> label;
 int pc=0;
@@ -91,7 +91,7 @@ for(int i=0;i<lines.size();i++){
     pc+=4;
 }
 
-/*instruction processing */
+//instruction processing 
 
 pc=0;
 bool haltFound=false;
@@ -109,7 +109,7 @@ ss>>op;
 
 if(op=="") continue;
 
-/*R type*/
+// R type
 
 if(op=="add"||op=="sub"||op=="sll"||op=="slt"||op=="sltu"
 ||op=="xor"||op=="srl"||op=="or"||op=="and"){
@@ -137,10 +137,10 @@ if(op=="srl"){funct3="101";}
 if(op=="or"){funct3="110";}
 if(op=="and"){funct3="111";}
 
-out<<R(funct7,reg[rs2],reg[rs1],funct3,reg[rd],"0110011")<<"\n";
+cout<<R(funct7,reg[rs2],reg[rs1],funct3,reg[rd],"0110011")<<"\n";
 }
 
-/*I type*/
+//I type
 
 else if(op=="addi"||op=="sltiu"){
 
@@ -157,7 +157,7 @@ error(i+1,"Immediate out of bounds");
 
 string funct3=(op=="addi")?"000":"011";
 
-out<<I(imm,reg[rs1],funct3,reg[rd],"0010011")<<"\n";
+cout<<I(imm,reg[rs1],funct3,reg[rd],"0010011")<<"\n";
 }
 
 else if(op=="lw"){
@@ -193,10 +193,10 @@ ss>>temp;
 string rs1=temp.substr(0,temp.size()-1);
 imm=stoi(temp.substr(0,temp.find('(')));
 
-out<<I(imm,reg[rs1],"000",reg[rd],"1100111")<<"\n";
+cout<<I(imm,reg[rs1],"000",reg[rd],"1100111")<<"\n";
 }
 
-/*S type*/
+//S type
 
 else if(op=="sw"){
 
@@ -219,10 +219,10 @@ string rs1 = rest.substr(pos1+1,pos2-pos1-1);
 if(!reg.count(rs1) || !reg.count(rs2))
     error(i+1,"Invalid Register");
 
-out<<S(imm,reg[rs2],reg[rs1],"010","0100011")<<"\n";
+cout<<S(imm,reg[rs2],reg[rs1],"010","0100011")<<"\n";
 }
 
-/*B type*/
+//B type
 
 else if(op=="beq"||op=="bne"||op=="blt"||
         op=="bge"||op=="bltu"||op=="bgeu"){
@@ -257,10 +257,10 @@ if(op=="bge")funct3="101";
 if(op=="bltu")funct3="110";
 if(op=="bgeu")funct3="111";
 
-out<<B(imm,reg[rs2],reg[rs1],funct3,"1100011")<<"\n";
+cout<<B(imm,reg[rs2],reg[rs1],funct3,"1100011")<<"\n";
 }
 
-/*U type*/
+//U type
 
 else if(op=="lui"||op=="auipc"){
 
@@ -272,10 +272,10 @@ rd.erase(remove(rd.begin(),rd.end(),' '),rd.end());
 
 string opcode=(op=="lui")?"0110111":"0010111";
 
-out<<U(imm,reg[rd],opcode)<<"\n";
+cout<<U(imm,reg[rd],opcode)<<"\n";
 }
 
-/*J type*/
+//J type
 
 else if(op=="jal"){
 
@@ -290,10 +290,10 @@ error(i+1,"Undefined Label");
 
 int imm=label[labelName]-pc;
 
-out<<J(imm,reg[rd],"1101111")<<"\n";
+cout<<J(imm,reg[rd],"1101111")<<"\n";
 }
 
-/*virtual halt */
+//virtual halt 
 
 else if(op=="beq"){
 }
@@ -305,7 +305,7 @@ error(i+1,"Invalid Instruction");
 pc+=4;
 }
 
-/*check virtual halt*/
+//check virtual halt
 
 string last=lines.back();
 if(last.find("beq zero,zero,0")==string::npos)
