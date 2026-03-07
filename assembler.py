@@ -298,10 +298,14 @@ def assemble(input_file,output_file):
             f.write(inst+"\n")
 
 # RUN 
+if __name__ == "__main__":
 
-if __name__=="__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python assembler.py input.asm output.txt")
+        sys.exit(1)
 
-    input_file=sys.argv[1]
-    output_file=sys.argv[2]
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
 
-    assemble(input_file,output_file)
+    assemble(input_file, output_file)
+
