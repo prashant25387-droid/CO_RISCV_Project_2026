@@ -85,7 +85,7 @@ J_TYPE = {
 def to_binary(val,bits):
     return format(val & ((1<<bits)-1), f'0{bits}b')
 
-# PASS 1 (LABELS) 
+# LABELS 
 
 def collect_labels(lines):
     labels={}
@@ -108,7 +108,7 @@ def collect_labels(lines):
 
     return labels
 
-# R TYPE 
+# R type 
 def encode_r(op,rd,rs1,rs2):
 
     funct7,funct3,opcode=R_TYPE[op]
@@ -122,7 +122,7 @@ def encode_r(op,rd,rs1,rs2):
         opcode
     )
 
-# I TYPE 
+# I type 
 
 def encode_i(op,rd,rs1,imm):
 
@@ -137,7 +137,7 @@ def encode_i(op,rd,rs1,imm):
         opcode
     )
 
-# LW SPECIAL FORMAT 
+# LW 
 
 def encode_lw(rd,offset,rs1):
 
@@ -152,7 +152,7 @@ def encode_lw(rd,offset,rs1):
         opcode
     )
 
-# S TYPE 
+# S type 
 
 def encode_sw(rs2,offset,rs1):
 
@@ -169,7 +169,7 @@ def encode_sw(rs2,offset,rs1):
         opcode
     )
 
-# B TYPE 
+# B type 
 
 def encode_b(op,rs1,rs2,offset):
 
@@ -188,7 +188,7 @@ def encode_b(op,rs1,rs2,offset):
         opcode
     )
 
-# U TYPE 
+# U type 
 
 def encode_u(op,rd,imm):
 
@@ -198,7 +198,7 @@ def encode_u(op,rd,imm):
 
     return imm_bin + registers[rd] + opcode
 
-# J TYPE 
+# J type 
 
 def encode_j(rd,offset):
 
