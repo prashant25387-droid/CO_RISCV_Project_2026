@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-/*register mapping*/
+// register mappings
 
 unordered_map<string,string> reg = {
 {"zero","00000"},{"ra","00001"},{"sp","00010"},{"gp","00011"},
