@@ -1,6 +1,5 @@
 import sys
 
-
 registers = {
 "x0":"00000","zero":"00000",
 "x1":"00001","ra":"00001",
@@ -78,19 +77,14 @@ J_TYPE = {
 "jal":"1101111"
 }
 
-
-
 def tobinary(v,bits):
     return format(v & ((1<<bits)-1), f'0{bits}b')
 
- 
-
-def collectlabel(lines):
+ def collectlabel(lines):
     labels={}
     pc=0
 
     for line in lines:
-
         line=line.strip()
         if line=="":
             continue
@@ -150,12 +144,9 @@ def encodeLW(rd,offset,rs1):
         opcode
     )
 
- 
-
 def encodeSW(rs2,offset,rs1):
 
     funct3,opcode=S_TYPE["sw"]
-
     imm=tobinary(int(offset),12)
 
     return (
@@ -167,12 +158,9 @@ def encodeSW(rs2,offset,rs1):
         opcode
     )
 
- 
-
 def encodeB(op,rs1,rs2,offset):
 
     funct3,opcode=B_TYPE[op]
-
     imm=tobinary(offset,13)
 
     return (
@@ -186,9 +174,7 @@ def encodeB(op,rs1,rs2,offset):
         opcode
     )
 
- 
-
-def encodeU(op,rd,imm):
+ def encodeU(op,rd,imm):
 
     opcode=U_TYPE[op]
 
@@ -197,7 +183,6 @@ def encodeU(op,rd,imm):
     return imm_bin + registers[rd] + opcode
 
  
-
 def encodeJ(rd,offset):
 
     opcode=J_TYPE["jal"]
@@ -214,7 +199,6 @@ def encodeJ(rd,offset):
     )
 
  
-
 def assemble(input_file,output_file):
 
     with open(input_file) as f:
@@ -226,8 +210,7 @@ def assemble(input_file,output_file):
     output=[]
 
     for line in lines:
-
-        line=line.strip()
+       line=line.strip()
 
         if line=="":
             continue
@@ -271,8 +254,7 @@ def assemble(input_file,output_file):
                 offset = int(target)
          
             binary = encodeB(op, rs1, rs2, offset)
-         
-
+        
      
         elif op=="jal":
              rd,target = parts[1], parts[2]
@@ -315,5 +297,4 @@ if __name__ == "__main__":
     output_file = sys.argv[2]
 
     assemble(input_file, output_file)
-
-
+ 
