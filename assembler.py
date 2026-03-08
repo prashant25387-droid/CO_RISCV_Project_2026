@@ -271,13 +271,18 @@ def assemble(input_file,output_file):
                 offset = int(target)
          
             binary = encodeB(op, rs1, rs2, offset)
+         
 
+     
         elif op=="jal":
+             rd,target = parts[1], parts[2]
 
-            rd,label=parts[1],parts[2]
-
-            offset=labels[label]-pc
-            binary=encodeJ(rd,offset)
+             if target in labels:
+                 offset = labels[target] - pc
+             else:
+                 offset = int(target)
+         
+             binary = encodeJ(rd, offset) 
 
         elif op=="jalr":
 
