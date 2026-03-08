@@ -1,6 +1,5 @@
 import sys
 
-# REGISTER MAP
 
 registers = {
 "x0":"00000","zero":"00000",
@@ -36,8 +35,7 @@ registers = {
 "x30":"11110","t5":"11110",
 "x31":"11111","t6":"11111"
 }
-
-# INSTRUCTION TABLES 
+ 
 
 R_TYPE = {
 "add":("0000000","000","0110011"),
@@ -80,12 +78,12 @@ J_TYPE = {
 "jal":"1101111"
 }
 
-# HELPER
+
 
 def tobinary(v,bits):
     return format(v & ((1<<bits)-1), f'0{bits}b')
 
-# LABELS 
+ 
 
 def collectlabel(lines):
     labels={}
@@ -108,8 +106,8 @@ def collectlabel(lines):
 
     return labels
 
-# R type 
-def encode_r(op,rd,rs1,rs2):
+ 
+def encodeR(op,rd,rs1,rs2):
 
     funct7,funct3,opcode=R_TYPE[op]
 
@@ -122,9 +120,9 @@ def encode_r(op,rd,rs1,rs2):
         opcode
     )
 
-# I type 
+ 
 
-def encode_i(op,rd,rs1,imm):
+def encodeI(op,rd,rs1,imm):
 
     funct3,opcode=I_TYPE[op]
     imm_bin=tobinary(int(imm),12)
@@ -137,9 +135,9 @@ def encode_i(op,rd,rs1,imm):
         opcode
     )
 
-# LW 
+ 
 
-def encode_lw(rd,offset,rs1):
+def encodeLW(rd,offset,rs1):
 
     funct3,opcode=I_TYPE["lw"]
     imm_bin=tobinary(int(offset),12)
@@ -152,9 +150,9 @@ def encode_lw(rd,offset,rs1):
         opcode
     )
 
-# S type 
+ 
 
-def encode_sw(rs2,offset,rs1):
+def encodeSW(rs2,offset,rs1):
 
     funct3,opcode=S_TYPE["sw"]
 
@@ -169,9 +167,9 @@ def encode_sw(rs2,offset,rs1):
         opcode
     )
 
-# B type 
+ 
 
-def encode_b(op,rs1,rs2,offset):
+def encodeB(op,rs1,rs2,offset):
 
     funct3,opcode=B_TYPE[op]
 
@@ -188,9 +186,9 @@ def encode_b(op,rs1,rs2,offset):
         opcode
     )
 
-# U type 
+ 
 
-def encode_u(op,rd,imm):
+def encodeU(op,rd,imm):
 
     opcode=U_TYPE[op]
 
@@ -198,9 +196,9 @@ def encode_u(op,rd,imm):
 
     return imm_bin + registers[rd] + opcode
 
-# J type 
+ 
 
-def encode_j(rd,offset):
+def encodeJ(rd,offset):
 
     opcode=J_TYPE["jal"]
 
@@ -215,7 +213,7 @@ def encode_j(rd,offset):
         opcode
     )
 
-# MAIN ASSEMBLER 
+ 
 
 def assemble(input_file,output_file):
 
@@ -246,46 +244,46 @@ def assemble(input_file,output_file):
         if op in R_TYPE:
 
             rd,rs1,rs2=parts[1],parts[2],parts[3]
-            binary=encode_r(op,rd,rs1,rs2)
+            binary=encodeR(op,rd,rs1,rs2)
 
         elif op=="addi" or op=="sltiu":
 
             rd,rs1,imm=parts[1],parts[2],parts[3]
-            binary=encode_i(op,rd,rs1,imm)
+            binary=encodeI(op,rd,rs1,imm)
 
         elif op=="lw":
 
             rd,offset,rs1=parts[1],parts[2],parts[3]
-            binary=encode_lw(rd,offset,rs1)
+            binary=encodeLW(rd,offset,rs1)
 
         elif op=="sw":
 
             rs2,offset,rs1=parts[1],parts[2],parts[3]
-            binary=encode_sw(rs2,offset,rs1)
+            binary=encodeSW(rs2,offset,rs1)
 
         elif op in B_TYPE:
 
             rs1,rs2,label=parts[1],parts[2],parts[3]
 
             offset=labels[label]-pc
-            binary=encode_b(op,rs1,rs2,offset)
+            binary=encodeB(op,rs1,rs2,offset)
 
         elif op=="jal":
 
             rd,label=parts[1],parts[2]
 
             offset=labels[label]-pc
-            binary=encode_j(rd,offset)
+            binary=encodeJ(rd,offset)
 
         elif op=="jalr":
 
             rd,rs1,imm=parts[1],parts[2],parts[3]
-            binary=encode_i(op,rd,rs1,imm)
+            binary=encodeI(op,rd,rs1,imm)
 
         elif op in U_TYPE:
 
             rd,imm=parts[1],parts[2]
-            binary=encode_u(op,rd,imm)
+            binary=encodeU(op,rd,imm)
 
         else:
             raise Exception(f"Invalid instruction: {op}")
@@ -297,7 +295,7 @@ def assemble(input_file,output_file):
         for inst in output:
             f.write(inst+"\n")
 
-# RUN 
+ 
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
