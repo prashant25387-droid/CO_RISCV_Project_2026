@@ -114,8 +114,6 @@ def encodeR(op,rd,rs1,rs2):
         opcode
     )
 
- 
-
 def encodeI(op,rd,rs1,imm):
 
     funct3,opcode=I_TYPE[op]
@@ -128,9 +126,7 @@ def encodeI(op,rd,rs1,imm):
         registers[rd] +
         opcode
     )
-
  
-
 def encodeLW(rd,offset,rs1):
 
     funct3,opcode=I_TYPE["lw"]
