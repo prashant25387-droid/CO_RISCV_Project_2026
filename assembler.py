@@ -260,13 +260,17 @@ def assemble(input_file,output_file):
 
             rs2,offset,rs1=parts[1],parts[2],parts[3]
             binary=encodeSW(rs2,offset,rs1)
+         
+         elif op in B_TYPE:
 
-        elif op in B_TYPE:
+             rs1, rs2, target = parts[1], parts[2], parts[3]
 
-            rs1,rs2,label=parts[1],parts[2],parts[3]
-
-            offset=labels[label]-pc
-            binary=encodeB(op,rs1,rs2,offset)
+             if target in labels:
+                 offset = labels[target] - pc
+             else:
+                 offset = int(target)
+         
+             binary = encodeB(op, rs1, rs2, offset)
 
         elif op=="jal":
 
