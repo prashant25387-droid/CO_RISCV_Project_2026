@@ -210,7 +210,7 @@ def assemble(input_file,output_file):
     output=[]
 
     for line in lines:
-       line=line.strip()
+        line=line.strip()
 
         if line=="":
             continue
