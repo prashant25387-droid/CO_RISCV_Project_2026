@@ -80,7 +80,7 @@ J_TYPE = {
 def tobinary(v,bits):
     return format(v & ((1<<bits)-1), f'0{bits}b')
 
- def collectlabel(lines):
+def collectlabel(lines):
     labels={}
     pc=0
 
@@ -174,7 +174,7 @@ def encodeB(op,rs1,rs2,offset):
         opcode
     )
 
- def encodeU(op,rd,imm):
+def encodeU(op,rd,imm):
 
     opcode=U_TYPE[op]
 
