@@ -82,12 +82,12 @@ J_TYPE = {
 
 # HELPER
 
-def to_binary(val,bits):
-    return format(val & ((1<<bits)-1), f'0{bits}b')
+def tobinary(v,bits):
+    return format(v & ((1<<bits)-1), f'0{bits}b')
 
 # LABELS 
 
-def collect_labels(lines):
+def collectlabel(lines):
     labels={}
     pc=0
 
@@ -127,7 +127,7 @@ def encode_r(op,rd,rs1,rs2):
 def encode_i(op,rd,rs1,imm):
 
     funct3,opcode=I_TYPE[op]
-    imm_bin=to_binary(int(imm),12)
+    imm_bin=tobinary(int(imm),12)
 
     return (
         imm_bin +
@@ -142,7 +142,7 @@ def encode_i(op,rd,rs1,imm):
 def encode_lw(rd,offset,rs1):
 
     funct3,opcode=I_TYPE["lw"]
-    imm_bin=to_binary(int(offset),12)
+    imm_bin=tobinary(int(offset),12)
 
     return (
         imm_bin +
@@ -158,7 +158,7 @@ def encode_sw(rs2,offset,rs1):
 
     funct3,opcode=S_TYPE["sw"]
 
-    imm=to_binary(int(offset),12)
+    imm=tobinary(int(offset),12)
 
     return (
         imm[:7] +
@@ -175,7 +175,7 @@ def encode_b(op,rs1,rs2,offset):
 
     funct3,opcode=B_TYPE[op]
 
-    imm=to_binary(offset,13)
+    imm=tobinary(offset,13)
 
     return (
         imm[0] +
@@ -194,7 +194,7 @@ def encode_u(op,rd,imm):
 
     opcode=U_TYPE[op]
 
-    imm_bin=to_binary(int(imm),20)
+    imm_bin=tobinary(int(imm),20)
 
     return imm_bin + registers[rd] + opcode
 
@@ -204,7 +204,7 @@ def encode_j(rd,offset):
 
     opcode=J_TYPE["jal"]
 
-    imm=to_binary(offset,21)
+    imm=tobinary(offset,21)
 
     return (
         imm[0] +
@@ -222,7 +222,7 @@ def assemble(input_file,output_file):
     with open(input_file) as f:
         lines=f.readlines()
 
-    labels=collect_labels(lines)
+    labels=collectlabel(lines)
 
     pc=0
     output=[]
@@ -309,3 +309,4 @@ if __name__ == "__main__":
 
     assemble(input_file, output_file)
 
+Ṇ
