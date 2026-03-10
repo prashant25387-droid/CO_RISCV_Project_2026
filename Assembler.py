@@ -279,8 +279,7 @@ def assemble(input_file,output_file):
         pc+=4
 
     with open(output_file,"w") as f:
-        for inst in output:
-            f.write(inst+"\n")
+        f.write("\n".join(output))
 
  
 if __name__ == "__main__":
