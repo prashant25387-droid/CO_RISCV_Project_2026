@@ -34,9 +34,8 @@ registers = {
 "x30":"11110","t5":"11110",
 "x31":"11111","t6":"11111"
 }
- 
 
-R_TYPE = {
+R = {
 "add":("0000000","000","0110011"),
 "sub":("0100000","000","0110011"),
 "sll":("0000000","001","0110011"),
@@ -48,18 +47,16 @@ R_TYPE = {
 "and":("0000000","111","0110011")
 }
 
-I_TYPE = {
+I = {
 "addi":("000","0010011"),
 "lw":("010","0000011"),
 "sltiu":("011","0010011"),
 "jalr":("000","1100111")
 }
 
-S_TYPE = {
-"sw":("010","0100011")
-}
+S = {"sw":("010","0100011")}
 
-B_TYPE = {
+B = {
 "beq":("000","1100011"),
 "bne":("001","1100011"),
 "blt":("100","1100011"),
@@ -68,224 +65,156 @@ B_TYPE = {
 "bgeu":("111","1100011")
 }
 
-U_TYPE = {
+U = {
 "lui":"0110111",
 "auipc":"0010111"
 }
 
-J_TYPE = {
-"jal":"1101111"
-}
+J = {"jal":"1101111"}
 
 def tobinary(v,bits):
-    return format(v & ((1<<bits)-1), f'0{bits}b')
+    return format(int(v) & ((1<<bits)-1), f'0{bits}b')
 
-def collectlabel(lines):
-    labels={}
-    pc=0
 
-    for line in lines:
-        line=line.strip()
-        if line=="":
-            continue
-
-        if ":" in line:
-            label=line.split(":")[0]
-            labels[label]=pc
-
-            if line.split(":")[1].strip()=="":
-                continue
-
-        pc+=4
-
-    return labels
-
- 
 def encodeR(op,rd,rs1,rs2):
+    f7,f3,opc = R[op]
+    return f7 + registers[rs2] + registers[rs1] + f3 + registers[rd] + opc
 
-    funct7,funct3,opcode=R_TYPE[op]
-
-    return (
-        funct7 +
-        registers[rs2] +
-        registers[rs1] +
-        funct3 +
-        registers[rd] +
-        opcode
-    )
 
 def encodeI(op,rd,rs1,imm):
+    f3,opc = I[op]
+    return tobinary(imm,12) + registers[rs1] + f3 + registers[rd] + opc
 
-    funct3,opcode=I_TYPE[op]
-    imm_bin=tobinary(int(imm),12)
 
-    return (
-        imm_bin +
-        registers[rs1] +
-        funct3 +
-        registers[rd] +
-        opcode
-    )
- 
-def encodeLW(rd,offset,rs1):
+def encodeS(rs2,rs1,imm):
+    f3,opc = S["sw"]
+    imm = tobinary(imm,12)
+    return imm[:7] + registers[rs2] + registers[rs1] + f3 + imm[7:] + opc
 
-    funct3,opcode=I_TYPE["lw"]
-    imm_bin=tobinary(int(offset),12)
 
-    return (
-        imm_bin +
-        registers[rs1] +
-        funct3 +
-        registers[rd] +
-        opcode
-    )
+def encodeB(op,rs1,rs2,imm):
+    f3,opc = B[op]
+    imm = tobinary(imm,13)
+    return imm[0] + imm[2:8] + registers[rs2] + registers[rs1] + f3 + imm[8:12] + imm[1] + opc
 
-def encodeSW(rs2,offset,rs1):
-
-    funct3,opcode=S_TYPE["sw"]
-    imm=tobinary(int(offset),12)
-
-    return (
-        imm[:7] +
-        registers[rs2] +
-        registers[rs1] +
-        funct3 +
-        imm[7:] +
-        opcode
-    )
-
-def encodeB(op,rs1,rs2,offset):
-
-    funct3,opcode=B_TYPE[op]
-    imm=tobinary(offset,13)
-
-    return (
-        imm[0] +
-        imm[2:8] +
-        registers[rs2] +
-        registers[rs1] +
-        funct3 +
-        imm[8:12] +
-        imm[1] +
-        opcode
-    )
 
 def encodeU(op,rd,imm):
+    opc = U[op]
+    return tobinary(imm,20) + registers[rd] + opc
 
-    opcode=U_TYPE[op]
 
-    imm_bin=tobinary(int(imm),20)
+def encodeJ(rd,imm):
+    opc = J["jal"]
+    imm = tobinary(imm,21)
+    return imm[0] + imm[10:20] + imm[9] + imm[1:9] + registers[rd] + opc
 
-    return imm_bin + registers[rd] + opcode
 
- 
-def encodeJ(rd,offset):
+def assemble(inp,out):
 
-    opcode=J_TYPE["jal"]
+    with open(inp) as f:
+        lines = f.readlines()
 
-    imm=tobinary(offset,21)
-
-    return (
-        imm[0] +
-        imm[10:20] +
-        imm[9] +
-        imm[1:9] +
-        registers[rd] +
-        opcode
-    )
-
- 
-def assemble(input_file,output_file):
-
-    with open(input_file) as f:
-        lines=f.readlines()
-
-    labels=collectlabel(lines)
-
-    pc=0
-    output=[]
+    pc = 0
+    labels = {}
 
     for line in lines:
-        line=line.strip()
 
-        if line=="":
+        line = line.split("#")[0].strip()
+
+        if line == "":
             continue
 
         if ":" in line:
-            line=line.split(":")[1].strip()
-            if line=="":
+            label = line.split(":")[0].strip()
+            labels[label] = pc
+
+            rest = line.split(":",1)[1].strip()
+
+            if rest == "":
                 continue
 
-        parts=line.replace(","," ").replace("("," ").replace(")"," ").split()
+        pc += 4
 
-        op=parts[0]
+    pc = 0
+    output = []
+    halt = False
 
-        if op in R_TYPE:
+    for line in lines:
 
-            rd,rs1,rs2=parts[1],parts[2],parts[3]
-            binary=encodeR(op,rd,rs1,rs2)
+        line = line.split("#")[0].strip()
 
-        elif op=="addi" or op=="sltiu":
+        if line == "":
+            continue
 
-            rd,rs1,imm=parts[1],parts[2],parts[3]
-            binary=encodeI(op,rd,rs1,imm)
+        if ":" in line:
+            line = line.split(":",1)[1].strip()
+            if line == "":
+                continue
 
-        elif op=="lw":
+        p = line.replace(","," ").replace("("," ").replace(")"," ").split()
 
-            rd,offset,rs1=parts[1],parts[2],parts[3]
-            binary=encodeLW(rd,offset,rs1)
+        op = p[0]
 
-        elif op=="sw":
+        try:
 
-            rs2,offset,rs1=parts[1],parts[2],parts[3]
-            binary=encodeSW(rs2,offset,rs1)
-         
-        elif op in B_TYPE:
+            if op in R:
+                output.append(encodeR(op,p[1],p[2],p[3]))
 
-            rs1, rs2, target = parts[1], parts[2], parts[3]
+            elif op == "addi":
+                output.append(encodeI(op,p[1],p[2],p[3]))
 
-            if target in labels:
-                offset = labels[target] - pc
+            elif op == "lw":
+                output.append(encodeI(op,p[1],p[3],p[2]))
+
+            elif op == "sw":
+                output.append(encodeS(p[1],p[3],p[2]))
+
+            elif op in B:
+
+                if p[1]=="zero" and p[2]=="zero" and p[3]=="0":
+                    halt = True
+
+                offset = labels[p[3]]-pc if p[3] in labels else int(p[3])
+
+                output.append(encodeB(op,p[1],p[2],offset))
+
+            elif op in U:
+                output.append(encodeU(op,p[1],p[2]))
+
+            elif op == "jal":
+
+                offset = labels[p[2]]-pc if p[2] in labels else int(p[2])
+
+                output.append(encodeJ(p[1],offset))
+
+            elif op == "jalr":
+                output.append(encodeI(op,p[1],p[2],p[3]))
+
             else:
-                offset = int(target)
-         
-            binary = encodeB(op, rs1, rs2, offset)
-        
-     
-        elif op=="jal":
-             rd,target = parts[1], parts[2]
+                print(f"Error on line {pc//4+1}: Unknown instruction")
+                return
 
-             if target in labels:
-                 offset = labels[target] - pc
-             else:
-                 offset = int(target)
-         
-             binary = encodeJ(rd, offset) 
+        except KeyError as e:
+            print(f"Error on line {pc//4+1}: Invalid register {e}")
+            return
 
-        elif op=="jalr":
+        pc += 4
 
-            rd,rs1,imm=parts[1],parts[2],parts[3]
-            binary=encodeI(op,rd,rs1,imm)
 
-        elif op in U_TYPE:
+    if not halt:
+        print("Error: Missing Virtual Halt instruction")
 
-            rd,imm=parts[1],parts[2]
-            binary=encodeU(op,rd,imm)
 
-        else:
-            raise Exception(f"Invalid instruction: {op}")
+    with open(out,"w") as f:
+        for i in output:
+            f.write(i+"\n")
 
-        output.append(binary)
-        pc+=4
 
-    with open(output_file,"w") as f:
-        f.write("\n".join(output))
+    print(f"Successfully assembled to {out}")
 
- 
 if __name__ == "__main__":
 
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
     assemble(input_file, output_file)
- 
