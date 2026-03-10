@@ -285,10 +285,6 @@ def assemble(input_file,output_file):
  
 if __name__ == "__main__":
 
-    if len(sys.argv) != 3:
-        print("Usage: python assembler.py TEST.asm output.txt")
-        sys.exit(1)
-
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
