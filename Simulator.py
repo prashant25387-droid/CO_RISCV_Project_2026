@@ -49,13 +49,15 @@ def valid_address(addr):
     return False
 
 
-# ---------------- SIMULATOR ----------------
 
+
+
+#simulator
 def simulate(input_file, output_file):
     mem = load_program(input_file)
 
     reg = [0] * 32
-    reg[2] = STACK_TOP   # initialize stack pointer to 0x17C
+    reg[2] = STACK_TOP  
 
     pc = 0
     trace = []
@@ -72,7 +74,7 @@ def simulate(input_file, output_file):
         opcode = instr & 0x7F
         next_pc = pc + 4
 
-        # ---------- R TYPE ----------
+        
         if opcode == 0b0110011:
             rd    = (instr >> 7)  & 0x1F
             rs1   = (instr >> 15) & 0x1F
@@ -105,7 +107,8 @@ def simulate(input_file, output_file):
 
             reg[rd] &= 0xFFFFFFFF
 
-        # ---------- I TYPE (ALU) ----------
+        
+        #I Type(ALU)
         elif opcode == 0b0010011:
             rd    = (instr >> 7)  & 0x1F
             rs1   = (instr >> 15) & 0x1F
@@ -137,7 +140,8 @@ def simulate(input_file, output_file):
 
             reg[rd] &= 0xFFFFFFFF
 
-        # ---------- LOAD ----------
+        
+        #load
         elif opcode == 0b0000011:
             rd    = (instr >> 7)  & 0x1F
             rs1   = (instr >> 15) & 0x1F
@@ -150,7 +154,9 @@ def simulate(input_file, output_file):
 
             reg[rd] = mem.get(addr, 0) & 0xFFFFFFFF
 
-        # ---------- STORE ----------
+        
+        
+        #store
         elif opcode == 0b0100011:
             rs1   = (instr >> 15) & 0x1F
             rs2   = (instr >> 20) & 0x1F
@@ -165,7 +171,9 @@ def simulate(input_file, output_file):
 
             mem[addr] = reg[rs2] & 0xFFFFFFFF
 
-        # ---------- BRANCH ----------
+        
+        
+        #branch
         elif opcode == 0b1100011:
             rs1   = (instr >> 15) & 0x1F
             rs2   = (instr >> 20) & 0x1F
@@ -178,7 +186,8 @@ def simulate(input_file, output_file):
                 13,
             )
 
-            # HALT: beq x0, x0, 0
+            
+            #HALT
             if rs1 == 0 and rs2 == 0 and imm == 0:
                 reg[0] = 0
                 trace.append(
@@ -199,7 +208,8 @@ def simulate(input_file, output_file):
             if taken:
                 next_pc = current_pc + imm
 
-        # ---------- JAL ----------
+       
+        #JAL
         elif opcode == 0b1101111:
             rd  = (instr >> 7) & 0x1F
             imm = sign_extend(
@@ -213,7 +223,8 @@ def simulate(input_file, output_file):
             next_pc = (current_pc + imm) & 0xFFFFFFFF
             reg[rd] &= 0xFFFFFFFF
 
-        # ---------- JALR ----------
+        
+        #JALR
         elif opcode == 0b1100111:
             rd  = (instr >> 7)  & 0x1F
             rs1 = (instr >> 15) & 0x1F
@@ -222,13 +233,15 @@ def simulate(input_file, output_file):
             next_pc = ((reg[rs1] + imm) & 0xFFFFFFFF) & ~1
             reg[rd] = tmp
 
-        # ---------- LUI ----------
+        
+        #LUI
         elif opcode == 0b0110111:
             rd  = (instr >> 7) & 0x1F
             imm = (instr >> 12) & 0xFFFFF
             reg[rd] = (imm << 12) & 0xFFFFFFFF
 
-        # ---------- AUIPC ----------
+        
+        #AUIPC
         elif opcode == 0b0010111:
             rd  = (instr >> 7) & 0x1F
             imm = (instr >> 12) & 0xFFFFF
