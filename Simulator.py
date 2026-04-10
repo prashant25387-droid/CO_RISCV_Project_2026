@@ -21,7 +21,8 @@ def to_signed(x):
     return x if x < (1 << 31) else x - (1 << 32)
 
 
-# ---------------- LOAD PROGRAM ----------------
+
+
 
 def load_program(file):
     mem = {}
