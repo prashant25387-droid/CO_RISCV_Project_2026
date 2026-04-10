@@ -145,32 +145,41 @@ def simulate(input_file, output_file):
         elif opcode == 0b0000011:
             rd    = (instr >> 7)  & 0x1F
             rs1   = (instr >> 15) & 0x1F
+            funct3 = (instr >> 12) & 0x7 
             imm   = sign_extend((instr >> 20) & 0xFFF, 12)
             addr  = (reg[rs1] + imm) & 0xFFFFFFFF
 
+            if funct3 != 2:  
+                print(f"Error at instruction {instruction_count}")
+                return
+                
             if not valid_address(addr):
-                error = True
-                break
-
+                print(f"Error at instruction {instruction_count}")
+                return
+                
             reg[rd] = mem.get(addr, 0) & 0xFFFFFFFF
-
         
         
         #store
         elif opcode == 0b0100011:
             rs1   = (instr >> 15) & 0x1F
             rs2   = (instr >> 20) & 0x1F
+            funct3 = (instr >> 12) & 0x7
+            
             imm   = sign_extend(
                 ((instr >> 25) << 5) | ((instr >> 7) & 0x1F), 12
             )
             addr  = (reg[rs1] + imm) & 0xFFFFFFFF
-
+            
+            if funct3 != 2:   
+                print(f"Error at instruction {instruction_count}")
+                return
+                
             if not valid_address(addr):
-                error = True
-                break
-
+                print(f"Error at instruction {instruction_count}")
+                return
+                
             mem[addr] = reg[rs2] & 0xFFFFFFFF
-
         
         
         #branch
@@ -188,7 +197,7 @@ def simulate(input_file, output_file):
 
             
             #HALT
-            if rs1 == 0 and rs2 == 0 and imm == 0:
+            if funct3 == 0 and rs1 == 0 and rs2 == 0 and imm == 0:
                 reg[0] = 0
                 trace.append(
                     bin32(current_pc)
@@ -248,8 +257,8 @@ def simulate(input_file, output_file):
             reg[rd] = (current_pc + (imm << 12)) & 0xFFFFFFFF
 
         else:
-            error = True
-            break
+            print(f"Error at instruction {instruction_count}")
+            return
 
         pc = next_pc & 0xFFFFFFFF
         reg[0] = 0
